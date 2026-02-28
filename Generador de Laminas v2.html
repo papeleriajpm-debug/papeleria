@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Láminas - Papelería</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f5f0eb;
+    --card: #ffffff;
+    --primary: #2d5a27;
+    --primary-light: #e8f0e6;
+    --accent: #d4740e;
+    --accent-hover: #b8620a;
+    --text: #1a1a1a;
+    --text-light: #666;
+    --border: #ddd;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --danger: #e74c3c;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-icon {
+    width: 42px; height: 42px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 21px;
+  }
+
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+  /* Layout */
+  .main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 440px 1fr;
+    gap: 20px;
+  }
+
+  .panel {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .panel + .panel { margin-top: 14px; }
+
+  .panel-title {
+    font-size: 14px; font-weight: 700; color: var(--primary);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .panel-title span {
+    background: var(--primary); color: white;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* Dropzone */
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 24px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+  }
+
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .dropzone-icon { font-size: 32px; margin-bottom: 6px; }
+  .dropzone-text { font-size: 13px; color: var(--text-light); }
+  .dropzone-text strong { color: var(--primary); }
+
+  /* Image cards */
+  .image-list { margin-top: 14px; }
+
+  .img-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: #fafafa;
+    transition: border-color 0.2s;
+  }
+
+  .img-card:hover { border-color: var(--primary); }
+
+  .img-card-thumb {
+    width: 56px; height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .img-card-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .img-card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .img-card-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+  }
+
+  .img-card-sizes {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .img-card-sizes input {
+    width: 52px;
+    padding: 5px 4px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .img-card-sizes input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .img-card-sizes .x-label {
+    font-size: 13px; font-weight: 700; color: var(--text-light);
+  }
+
+  .img-card-sizes .cm-label {
+    font-size: 11px; color: var(--text-light); margin-left: 2px;
+  }
+
+  .img-card-qty {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
+  }
+
+  .img-card-qty label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+  }
+
+  .img-card-qty input {
+    width: 38px;
+    padding: 5px 2px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .img-card-qty input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .img-card-remove {
+    width: 28px; height: 28px;
+    background: none;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    color: var(--danger);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .img-card-remove:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+  }
+
+  .no-images {
+    font-size: 13px;
+    color: var(--text-light);
+    text-align: center;
+    padding: 16px;
+  }
+
+  /* Quick sizes */
+  .quick-section { margin-bottom: 12px; }
+
+  .quick-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .quick-sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .quick-btn {
+    padding: 5px 10px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .quick-btn:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  /* Paper buttons */
+  .paper-row { display: flex; gap: 8px; margin-bottom: 14px; }
+
+  .paper-btn {
+    flex: 1;
+    padding: 9px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .paper-btn:hover { border-color: var(--primary); }
+
+  .paper-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+  }
+
+  .paper-btn small {
+    display: block; font-size: 10px;
+    font-weight: 400; opacity: 0.7; margin-top: 1px;
+  }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .generate-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .generate-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+  /* Preview */
+  .preview-area {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .preview-empty {
+    text-align: center;
+    color: var(--text-light);
+    margin-top: 80px;
+  }
+
+  .preview-empty-icon { font-size: 44px; margin-bottom: 10px; opacity: 0.4; }
+
+  .page-container { margin-bottom: 16px; position: relative; }
+
+  .page-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .page-preview {
+    background: white;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+  }
+
+  .page-preview .img-block {
+    position: absolute;
+    overflow: hidden;
+    border: 1px dashed rgba(0,0,0,0.1);
+  }
+
+  .page-preview .img-block img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .preview-info {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  .print-btn {
+    margin-top: 10px;
+    padding: 11px 28px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .print-btn:hover { background: #1e3d1a; }
+
+  /* Print pages (hidden until printing) */
+  .print-page {
+    display: none;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+
+  .print-page .img-block {
+    position: absolute;
+    overflow: hidden;
+  }
+
+  .print-page .img-block img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white !important; }
+    .header, .controls-panel, .preview-info, .print-btn, .no-print, .page-preview, .page-label { display: none !important; }
+    .main { display: block !important; padding: 0 !important; max-width: none !important; }
+    .panel { box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; background: none !important; }
+
+    .print-page {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      page-break-after: always;
+    }
+
+    .print-page .img-block img {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+
+  @media (max-width: 950px) {
+    .main { grid-template-columns: 1fr; }
+  }
+
+  .scroll-left { max-height: calc(100vh - 100px); overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🖼️</div>
+  <div>
+    <h1>Generador de Láminas</h1>
+    <p>Cada imagen con su propio tamaño, todo en la misma hoja</p>
+  </div>
+</div>
+
+<div class="main">
+  <div class="controls-panel scroll-left">
+    <!-- Step 1: Upload -->
+    <div class="panel">
+      <div class="panel-title"><span>1</span> Sube las imágenes</div>
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">📷</div>
+        <div class="dropzone-text">
+          <strong>Arrastra imágenes aquí</strong><br>o haz clic para seleccionar
+        </div>
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+      </div>
+    </div>
+
+    <!-- Step 2: Size per image -->
+    <div class="panel">
+      <div class="panel-title"><span>2</span> Tamaño de cada imagen</div>
+
+      <div class="quick-section">
+        <div class="quick-label">Tamaños rápidos (clic para aplicar a todas)</div>
+        <div class="quick-sizes" id="quickSizes">
+          <button class="quick-btn" data-w="3" data-h="3">3×3</button>
+          <button class="quick-btn" data-w="4" data-h="4">4×4</button>
+          <button class="quick-btn" data-w="5" data-h="5">5×5</button>
+          <button class="quick-btn" data-w="5" data-h="7">5×7</button>
+          <button class="quick-btn" data-w="7" data-h="10">7×10</button>
+          <button class="quick-btn" data-w="10" data-h="15">10×15</button>
+          <button class="quick-btn" data-w="13" data-h="18">13×18</button>
+          <button class="quick-btn" data-w="15" data-h="20">15×20</button>
+        </div>
+      </div>
+
+      <div class="image-list" id="imageList">
+        <div class="no-images">Sube imágenes para configurar tamaños</div>
+      </div>
+    </div>
+
+    <!-- Step 3: Paper & Generate -->
+    <div class="panel">
+      <div class="panel-title"><span>3</span> Papel y generar</div>
+      <div class="paper-row">
+        <button class="paper-btn active" data-paper="carta" id="btnCarta">Carta<small>21.6 × 27.9 cm</small></button>
+        <button class="paper-btn" data-paper="oficio" id="btnOficio">Oficio<small>21.6 × 35.6 cm</small></button>
+      </div>
+      <button class="generate-btn" id="generateBtn" disabled>⚡ Generar lámina</button>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="panel">
+    <div class="panel-title no-print"><span>4</span> Vista previa</div>
+    <div class="preview-area" id="previewArea">
+      <div class="preview-empty">
+        <div class="preview-empty-icon">📄</div>
+        <p>Sube imágenes, ajusta tamaños y haz clic en "Generar"</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// State
+let images = []; // { src, name, w, h, qty }
+let paperSize = 'carta';
+
+const PAPER = {
+  carta:  { w: 21.6, h: 27.9 },
+  oficio: { w: 21.6, h: 35.6 }
+};
+const MARGIN = 0.8; // cm
+const GAP = 0.3; // cm between images
+
+// Elements
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const imageList = document.getElementById('imageList');
+const generateBtn = document.getElementById('generateBtn');
+const previewArea = document.getElementById('previewArea');
+
+// Dropzone
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); fileInput.value = ''; });
+
+function handleFiles(files) {
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) continue;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      images.push({ src: e.target.result, name: file.name, w: 5, h: 5, qty: 1 });
+      renderImageList();
+      updateBtn();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function renderImageList() {
+  if (images.length === 0) {
+    imageList.innerHTML = '<div class="no-images">Sube imágenes para configurar tamaños</div>';
+    return;
+  }
+
+  imageList.innerHTML = '';
+  images.forEach((img, i) => {
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    card.innerHTML = `
+      <div class="img-card-thumb"><img src="${img.src}"></div>
+      <div class="img-card-info">
+        <div class="img-card-name">${img.name}</div>
+        <div class="img-card-sizes">
+          <input type="number" value="${img.w}" min="1" max="40" step="0.5"
+            onchange="updateSize(${i}, 'w', this.value)"
+            onfocus="this.select()">
+          <span class="x-label">×</span>
+          <input type="number" value="${img.h}" min="1" max="40" step="0.5"
+            onchange="updateSize(${i}, 'h', this.value)"
+            onfocus="this.select()">
+          <span class="cm-label">cm</span>
+          <div class="img-card-qty">
+            <label>Cant.</label>
+            <input type="number" value="${img.qty}" min="1" max="50"
+              onchange="updateSize(${i}, 'qty', this.value)"
+              onfocus="this.select()">
+          </div>
+        </div>
+      </div>
+      <button class="img-card-remove" onclick="removeImage(${i})" title="Eliminar">×</button>
+    `;
+    imageList.appendChild(card);
+  });
+}
+
+function updateSize(index, prop, value) {
+  const num = parseFloat(value);
+  if (num > 0) images[index][prop] = prop === 'qty' ? Math.round(num) : num;
+}
+
+function removeImage(index) {
+  images.splice(index, 1);
+  renderImageList();
+  updateBtn();
+}
+
+function updateBtn() {
+  generateBtn.disabled = images.length === 0;
+}
+
+// Quick sizes: apply to ALL images
+document.querySelectorAll('.quick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const w = parseFloat(btn.dataset.w);
+    const h = parseFloat(btn.dataset.h);
+    images.forEach(img => { img.w = w; img.h = h; });
+    renderImageList();
+  });
+});
+
+// Paper size
+document.querySelectorAll('.paper-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.paper-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    paperSize = btn.dataset.paper;
+  });
+});
+
+// Generate
+generateBtn.addEventListener('click', generatePreview);
+
+function generatePreview() {
+  const paper = PAPER[paperSize];
+  const usableW = paper.w - MARGIN * 2;
+  const usableH = paper.h - MARGIN * 2;
+
+  // Expand images by quantity
+  let allItems = [];
+  images.forEach(img => {
+    for (let q = 0; q < img.qty; q++) {
+      allItems.push({ src: img.src, w: img.w, h: img.h });
+    }
+  });
+
+  if (allItems.length === 0) return;
+
+  // Validate sizes
+  for (const item of allItems) {
+    if (item.w > usableW || item.h > usableH) {
+      alert(`Una imagen de ${item.w}×${item.h} cm no cabe en el papel. Reduce el tamaño.`);
+      return;
+    }
+  }
+
+  // Simple row-based packing algorithm
+  const pages = packImages(allItems, usableW, usableH, GAP);
+
+  // Render
+  const previewScale = Math.min(520 / (paper.w * 3.78), 680 / (paper.h * 3.78));
+  const pxPerCm = 3.78 * previewScale;
+  const printPxPerCm = 96 / 2.54;
+
+  let html = '';
+
+  pages.forEach((page, pi) => {
+    const pw = paper.w * pxPerCm;
+    const ph = paper.h * pxPerCm;
+
+    // Preview
+    html += `<div class="page-container no-print">`;
+    if (pages.length > 1) html += `<div class="page-label">Hoja ${pi + 1} de ${pages.length}</div>`;
+    html += `<div class="page-preview" style="width:${pw}px; height:${ph}px;">`;
+
+    page.forEach(item => {
+      const x = (MARGIN + item.x) * pxPerCm;
+      const y = (MARGIN + item.y) * pxPerCm;
+      const w = item.w * pxPerCm;
+      const h = item.h * pxPerCm;
+      html += `<div class="img-block" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;">
+        <img src="${item.src}">
+      </div>`;
+    });
+
+    html += `</div></div>`;
+
+    // Print version
+    html += `<div class="print-page" style="width:${paper.w}cm; height:${paper.h}cm;">`;
+    page.forEach(item => {
+      html += `<div class="img-block" style="left:${MARGIN + item.x}cm;top:${MARGIN + item.y}cm;width:${item.w}cm;height:${item.h}cm;">
+        <img src="${item.src}">
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  // Summary
+  const totalItems = allItems.length;
+  html += `<div class="preview-info no-print">
+    📊 ${totalItems} imagen${totalItems > 1 ? 'es' : ''} en ${pages.length} hoja${pages.length > 1 ? 's' : ''}
+  </div>`;
+  html += `<button class="print-btn no-print" onclick="doPrint()">🖨️ Imprimir</button>`;
+
+  previewArea.innerHTML = html;
+}
+
+/**
+ * Row-based bin packing: place images left to right, top to bottom.
+ * When an image doesn't fit in the current row, start a new row.
+ * When a row doesn't fit on the page, start a new page.
+ */
+function packImages(items, pageW, pageH, gap) {
+  const pages = [];
+  let currentPage = [];
+  let cursorX = 0;
+  let cursorY = 0;
+  let rowHeight = 0;
+
+  for (const item of items) {
+    // Does it fit in current row?
+    if (cursorX + item.w > pageW + 0.01) {
+      // New row
+      cursorX = 0;
+      cursorY += rowHeight + gap;
+      rowHeight = 0;
+    }
+
+    // Does it fit on current page?
+    if (cursorY + item.h > pageH + 0.01) {
+      // Save current page and start new one
+      if (currentPage.length > 0) pages.push(currentPage);
+      currentPage = [];
+      cursorX = 0;
+      cursorY = 0;
+      rowHeight = 0;
+    }
+
+    // Place it
+    currentPage.push({
+      src: item.src,
+      w: item.w,
+      h: item.h,
+      x: cursorX,
+      y: cursorY
+    });
+
+    cursorX += item.w + gap;
+    rowHeight = Math.max(rowHeight, item.h);
+  }
+
+  if (currentPage.length > 0) pages.push(currentPage);
+  return pages;
+}
+
+function doPrint() {
+  window.print();
+}
+
+// Init
+renderImageList();
+</script>
+
+</body>
+</html>
